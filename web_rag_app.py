@@ -14,7 +14,7 @@ st.title("Web-based RAG Q&A System")
 # Sidebar for API key and model selection
 st.sidebar.header("Settings")
 groq_api_key = st.sidebar.text_input("Groq API Key", type="password")
-model_name = st.sidebar.selectbox("Select Groq Model", ["meta-llama/llama-4-maverick-17b-128e-instruct", "openai/gpt-oss-120b", "qwen/qwen3-32b"])  # Add more models as needed
+model_name = st.sidebar.selectbox("Select Groq Model", ["openai/gpt-oss-120b", "qwen/qwen3-32b"])  # Add more models as needed
 
 # Input for URL
 url = st.text_input("Enter the URL to load content from:", value="https://example.com")
@@ -33,8 +33,11 @@ if st.button("Load and Process URL"):
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             chunks = text_splitter.split_documents(documents)
 
-            # Step 3: Create embeddings and vector store
-            embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+            @st.cache_resource
+            def get_embeddings():
+                return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+            
+           
             vectorstore = FAISS.from_documents(chunks, embeddings)
 
             # Step 4: Set up the retriever
